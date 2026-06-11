@@ -297,7 +297,7 @@ class CommonLumi:
         """Correct the spectral response of the signal by multiplying with a reference
         spectrum. For example applying grating, detector or system spectral response curves.
 
-        Patameters
+        Parameters
         ----------
         ref: Signal 1D object
             Reference spectrum to be used for correction.
