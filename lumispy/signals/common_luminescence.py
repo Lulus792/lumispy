@@ -295,7 +295,7 @@ class CommonLumi:
 
     def spectral_response_correction(self, ref, inplace=False):
         """Correct the spectral response of the signal by multiplying with a reference
-        spectrum.
+        spectrum. For example applying grating, detector or system spectral response curves.
 
         Patameters
         ----------
