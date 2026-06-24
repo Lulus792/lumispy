@@ -24,6 +24,7 @@ from .axes import (
     data2invcm,
     var2invcm,
     solve_grating_equation,
+    transition_radiation_nm,
 )
 
 from .signals import (
@@ -39,6 +40,7 @@ __all__ = [
     "data2invcm",
     "var2invcm",
     "solve_grating_equation",
+    "transition_radiation_nm",
     "com",
     "crop_edges",
 ]
