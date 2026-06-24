@@ -496,3 +496,128 @@ def solve_grating_equation(
 
 
 solve_grating_equation.__doc__ %= GRATING_EQUATION_DOCSTRING_PARAMETERS
+
+
+
+
+
+def transition_radiation_nm(electron_energy = 30,
+                            material_dataset = 'Al_mcpeak',
+                            angular_axis = (0,90), 
+                            spectral_axis = np.linspace(190,1100,800)):
+
+    ''' Models probability per incoming electron of transition radiation in a given metal per unit nanometer. 
+    Based on Toon Coenen's Python script
+
+    Parameters
+    ----------
+    electron energy: float
+        energy electron beam is accelerated to in keV
+    
+    material_dataset: string
+        defines material and then optical constant dataset, e.g. Al_mcpeak 
+        computes McPeak's Aluminum optical constant dataset 
+    
+    angular_axis: tuple, numpy array, or hyperspy axis
+        defines angular axis range and stepsize that is computed
+
+    spectral_axis: range, numpy array, or hyperspy axis
+        defines spectral axis range and stepsize, outputted transition radiation
+        model will abibe by x-axis
+
+    '''
+                                
+    import TRfarfieldcalculation as TR
+                                
+    if material_dataset == 'Al_mcpeak':
+        n = np.loadtxt('optical_constants//mcpeak_n.csv',delimiter=',',skiprows=1)
+        k = np.loadtxt('optical_constants//mcpeak_k.csv',delimiter=',',skiprows=1)
+        wl = n[:,0]*1e3
+        n = n[:,1]
+        k = k[:,1]
+    elif material_dataset == 'Al_rakic':
+        n = np.loadtxt('optical_constants//rakic_n.csv',delimiter=',',skiprows=1)
+        k = np.loadtxt('optical_constants//rakic_k.csv',delimiter=',',skiprows=1)
+        wl = n[:,0]*1e3
+        n = n[:,1]
+        k = k[:,1]
+    elif material_dataset == 'Ag_johnson':
+        data= np.loadtxt('optical_constants//Ag_Johnson.csv',delimiter=',',skiprows=1)
+        wl = data[:,0]*1e3
+        n = data[:,1]
+        k = data[:,3]
+    elif material_dataset == 'Au_johnson':
+        data= np.loadtxt('optical_constants//Au_Johnson.txt',delimiter=' ',skiprows=1)
+        wl = data[:,0]*1e3
+        n = data[:,1]
+        k = data[:,2]
+    elif material_dataset == 'Au_palik':
+        data = np.loadtxt('optical_constants//Au_palik1.txt',skiprows=1)
+        wl = data[:,0]*1e3
+        n = data[:,1]
+        k = data[:,2]
+    elif material_dataset == 'Au_werner':
+        data = np.loadtxt('optical_constants//Au_werner.csv',delimiter=',',skiprows=1)
+        wl = data[:,0]*1e3
+        n = data[:,1]
+        k = data[:,2]
+    else:
+        raise ValueError(f"Unknown material dataset: {material_dataset}")
+
+
+    def axis_to_numpy(axis):
+        from hyperspy import axes
+        """Convert axis (tuple, list, np.ndarray, or hyperspy DataAxis) to np.ndarray"""
+        if isinstance(axis, np.ndarray):
+            return axis
+
+        elif isinstance(axis, (list, tuple)):
+            # interpret as (start, stop[, N])
+            if len(axis) == 2:
+                return np.linspace(axis[0], axis[1], 200)
+
+        elif isinstance(axis, axes.BaseDataAxis):
+            return np.asarray(axis.axis)
+
+        else:
+            return np.asarray(axis)  
+
+
+    angular_axis = axis_to_numpy(angular_axis)
+    spectral_axis = axis_to_numpy(spectral_axis)
+
+    epsilon = (n+1j*k)**2
+
+    optical_data = np.flipud(np.transpose(np.vstack((wl, 
+                                                     np.real(epsilon), 
+                                                     np.imag(epsilon))))) 
+  
+    TRemprob_nm, TRemprob_eV, Itr_nm, Itr_eV = TR.TRfarfieldcalculation_nm(angular_axis,
+                                                                            spectral_axis,
+                                                                            electron_energy,
+                                                                            optical_data,
+                                                                            'nm')
+
+    TRemprob = hs.signals.Signal1D(TRemprob_nm,
+                            axes=[{
+                                'axis': spectral_axis,
+                                'name': 'Wavelength',
+                                'units': 'nm'
+                            }],
+                            metadata={'General': {'title': material_dataset + ' transition radiation spectrum at ' + str(electron_energy)+ ' kV'}})
+    Itr = hs.signals.Signal2D(Itr_nm,
+                            axes=[{
+                                'axis': spectral_axis,
+                                'name': 'Wavelength',
+                                'units': 'nm'
+                            },
+                            {
+                                'axis': angular_axis,
+                                'name': 'Angle',
+                                'units': 'deg'
+                            }],
+                            
+                            metadata={'General': {'title': material_dataset + ' transition radiation angular distribution at ' + str(electron_energy)+ ' kV'}})
+
+
+    return [TRemprob, Itr]
