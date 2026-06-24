@@ -553,12 +553,17 @@ def transition_radiation_nm(electron_energy = 30,
         k = data[:,2]
     elif material_dataset == 'Au_palik':
         data = np.loadtxt('optical_constants//Au_palik1.txt',skiprows=1)
-        wl = data[:,0]*1e3
+        wl = 1239.84/data[:,0]
         n = data[:,1]
         k = data[:,2]
     elif material_dataset == 'Au_werner':
         data = np.loadtxt('optical_constants//Au_werner.csv',delimiter=',',skiprows=1)
         wl = data[:,0]*1e3
+        n = data[:,1]
+        k = data[:,2]
+    elif material_dataset == 'Au_SC':
+        data = np.loadtxt('optical_constants//Au_palik1.txt',skiprows=1)
+        wl = 1239.84/data[:,0]
         n = data[:,1]
         k = data[:,2]
     else:
