@@ -114,7 +114,6 @@ def run_apidoc(_):
     modules = os.path.normpath(os.path.join(cur_dir, "../lumispy"))
     exclude_pattern = [
         "../lumispy/tests",
-        "../lumispy/components",
         "../lumispy/release_info.py",
     ]
     main(["-e", "-f", "-P", "-o", output_path, modules, *exclude_pattern])
