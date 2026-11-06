@@ -16,12 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with LumiSpy. If not, see <https://www.gnu.org/licenses/#GPL>.
 
-# from .__init__ import asymmetric_peak_map, nanoparticles
+"""
+Module containing exemplary data for LumiSpy.
 
-from pathlib import Path
-import warnings
+"""
 
-import hyperspy.api as hs
+import lazy_loader
 
 from lumispy.data._optical_constants import (
     supported_optical_constants,
